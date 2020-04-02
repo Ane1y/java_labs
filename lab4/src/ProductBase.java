@@ -1,6 +1,4 @@
-import java.io.IOException;
 import java.sql.*;
-import java.util.InputMismatchException;
 import static java.lang.System.currentTimeMillis;
 import java.util.Scanner;
 
@@ -13,7 +11,7 @@ class ProductBase {
     private int rowCount = 0;
     private String name;
     private int price;
-    ProductBase() throws SQLException {
+    ProductBase(int n) throws SQLException {
         connect();
         stmt = connection.createStatement();
 
@@ -29,7 +27,7 @@ class ProductBase {
         connection.setAutoCommit(false);
         long t1 = currentTimeMillis();
 
-        for (int i = 1; i < 100 ; i++) {
+        for (int i = 1; i <= n ; i++) {
             ps.setInt(1, i);
             ps.setString(2, "good" + i);
             ps.setInt(3, i * 10);
@@ -42,13 +40,12 @@ class ProductBase {
 
     }
 
-    void executeQuery(String s) throws SQLException, IOException {
+    void executeQuery(String s) throws SQLException {
             switch (s) {
                 case "/add":
                     connection.setAutoCommit(false);
                     System.out.println("Введите данные в формате 'название, цена'");
-                    String str = in.nextLine();
-                    parse(str);
+                    parse();
                     ps = connection.prepareStatement("INSERT INTO users (prodid, title, cost) VALUES (?, ?, ?)");
                     ps.setInt(1, ++rowCount);
                     ps.setString(2, name);
@@ -59,10 +56,9 @@ class ProductBase {
                     break;
                 case "/delete":
                     System.out.println("Введите название товара, который вы хотите удалить");
-                    str = in.nextLine();
+                    String str = in.nextLine();
                     if(isItemExist(str)) {
                         ps = connection.prepareStatement("DELETE FROM users WHERE title = ? ");
-                        // get a connection and then in your try catch for executing your delete...
                         ps.setString(1, str);
                         ps.executeUpdate();
                     } else {
@@ -95,9 +91,8 @@ class ProductBase {
 
                 case "/change_price":
                     System.out.println("Введите данные в формате 'название, цена'");
-                    str = in.next();
-                    parse(str);
-                    if (isItemExist(str)) {
+                    parse();
+                    if (isItemExist(name)) {
                             stmt.executeUpdate("UPDATE users SET cost = " + price + " WHERE title = '" + name + "';");
                             System.out.println("Успешно");
 
@@ -106,16 +101,15 @@ class ProductBase {
                     }
                     break;
                 case "/filter_by_price":
-                        int num1 = in.nextInt();
-                        int num2 = in.nextInt();
-                        if ((num1 < num2) & (num1 > 0) & (num2 > 0)) {
-                            rs = stmt.executeQuery("SELECT title, cost FROM users WHERE cost BETWEEN " + num1 + " AND " + num2);
-                            if (rs.next()) {
-                                while (rs.next()) {
-                                    System.out.println(rs.getString(1) + "  " + rs.getInt(2));
-                                }
-                            } else {System.out.println("Ваш запрос не вернул результатов.");}
-                        } else {
+                    System.out.println("Введите промежуток через пробел");
+                    int num1 = in.nextInt();
+                    int num2 = in.nextInt();
+                    if ((num1 < num2) & (num1 > 0) & (num2 > 0)) {
+                        rs = stmt.executeQuery("SELECT title, cost FROM users WHERE cost BETWEEN " + num1 + " AND " + num2);
+                        while (rs.next()) {
+                            System.out.println(rs.getString(1) + "  " + rs.getInt(2));
+                        }
+                    } else {
                             System.out.println("Введите положительные числа, первое число должно быть меньше второго");
                         }
                     break;
@@ -153,18 +147,22 @@ class ProductBase {
         }
     }
 
-    private void parse(String str) throws IOException{
-        String delim = ", ";
+    private void parse() {
+        String str = in.nextLine();
+        String delim = ",";
         String[] strs = str.split(delim);
         if(strs.length != 2)
         {
-            throw new IOException("Неправильный формат ввода данных");
+            System.out.println("Неправильный формат ввода данных, попробуйте еще раз в формате 'название, цена'");
+            parse();
         }
         name = strs[0];
+        str = strs[1].trim();
         try {
-            price = Integer.parseInt(strs[1]);
+            price = Integer.parseInt(str);
         } catch (NumberFormatException e) {
-            System.out.println("Не число");
+            System.out.println("Не число, повторите ввод еще раз");
+            parse();
        }
     }
 }
