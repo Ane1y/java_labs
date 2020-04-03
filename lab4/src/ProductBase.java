@@ -18,7 +18,7 @@ class ProductBase {
         stmt.execute("CREATE TABLE IF NOT EXISTS sql_lab.users " +
                         "(id INT NOT NULL AUTO_INCREMENT, " +
                         "prodid INT NOT NULL," +
-                        " title VARCHAR(80) NOT NULL," +
+                        " title VARCHAR(80) NOT NULL UNIQUE ," +
                         " cost DECIMAL(10,2) NOT NULL," +
                         " PRIMARY KEY (id));");
         stmt.execute("DELETE FROM users");
@@ -46,11 +46,15 @@ class ProductBase {
                     connection.setAutoCommit(false);
                     System.out.println("Введите данные в формате 'название, цена'");
                     parse();
-                    ps = connection.prepareStatement("INSERT INTO users (prodid, title, cost) VALUES (?, ?, ?)");
-                    ps.setInt(1, ++rowCount);
-                    ps.setString(2, name);
-                    ps.setInt(3, price);
-                    ps.executeUpdate();
+                    try {
+                        ps = connection.prepareStatement("INSERT INTO users (prodid, title, cost) VALUES (?, ?, ?)");
+                        ps.setInt(1, ++rowCount);
+                        ps.setString(2, name);
+                        ps.setInt(3, price);
+                        ps.executeUpdate();
+                    } catch (SQLIntegrityConstraintViolationException e) {
+                        System.out.println("Товар с таким именем уже содержится в данной таблице");
+                    }
                     connection.setAutoCommit(true);
 
                     break;
