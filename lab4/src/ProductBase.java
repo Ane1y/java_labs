@@ -1,5 +1,7 @@
 import java.sql.*;
 import static java.lang.System.currentTimeMillis;
+
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 class ProductBase {
@@ -45,15 +47,19 @@ class ProductBase {
                 case "/add":
                     connection.setAutoCommit(false);
                     System.out.println("Введите данные в формате 'название, цена'");
-                    parse();
                     try {
+                        parse();
                         ps = connection.prepareStatement("INSERT INTO users (prodid, title, cost) VALUES (?, ?, ?)");
                         ps.setInt(1, ++rowCount);
                         ps.setString(2, name);
                         ps.setInt(3, price);
                         ps.executeUpdate();
+                        System.out.println("Успешно добавлено");
                     } catch (SQLIntegrityConstraintViolationException e) {
                         System.out.println("Товар с таким именем уже содержится в данной таблице");
+                    } catch (InputMismatchException e){
+                        e.getMessage();
+                        parse();
                     }
                     connection.setAutoCommit(true);
 
@@ -65,6 +71,7 @@ class ProductBase {
                         ps = connection.prepareStatement("DELETE FROM users WHERE title = ? ");
                         ps.setString(1, str);
                         ps.executeUpdate();
+                        System.out.println("Успешно удалено");
                     } else {
                         System.out.println("Такого товара не существует");
                     }
@@ -73,13 +80,7 @@ class ProductBase {
                 case "/show_all":
                     rs = stmt.executeQuery("SELECT * FROM users");
                     while (rs.next()) {
-                        int id = rs.getInt("id");
-                        int prodid = rs.getInt("prodid");
-                        String title = rs.getString("title");
-                        int cost = rs.getInt("cost");
-                        System.out.println(id +
-                                "\t" + prodid + "\t" + title +
-                                "\t" + cost);
+                        printLine();
                     }
                     break;
 
@@ -95,7 +96,12 @@ class ProductBase {
 
                 case "/change_price":
                     System.out.println("Введите данные в формате 'название, цена'");
+                    try {
+                        parse();
+                    } catch (InputMismatchException e) {
+                    e.getMessage();
                     parse();
+                    }
                     if (isItemExist(name)) {
                             stmt.executeUpdate("UPDATE users SET cost = " + price + " WHERE title = '" + name + "';");
                             System.out.println("Успешно");
@@ -109,9 +115,9 @@ class ProductBase {
                     int num1 = in.nextInt();
                     int num2 = in.nextInt();
                     if ((num1 < num2) & (num1 > 0) & (num2 > 0)) {
-                        rs = stmt.executeQuery("SELECT title, cost FROM users WHERE cost BETWEEN " + num1 + " AND " + num2);
+                        rs = stmt.executeQuery("SELECT * FROM users WHERE cost BETWEEN " + num1 + " AND " + num2);
                         while (rs.next()) {
-                            System.out.println(rs.getString(1) + "  " + rs.getInt(2));
+                            printLine();
                         }
                     } else {
                             System.out.println("Введите положительные числа, первое число должно быть меньше второго");
@@ -151,14 +157,12 @@ class ProductBase {
         }
     }
 
-    private void parse() {
+    private void parse() throws InputMismatchException{
         String str = in.nextLine();
         String delim = ",";
         String[] strs = str.split(delim);
-        if(strs.length != 2)
-        {
-            System.out.println("Неправильный формат ввода данных, попробуйте еще раз в формате 'название, цена'");
-            parse();
+        if(strs.length != 2) {
+            throw new InputMismatchException("Неправильный формат ввода данных, попробуйте еще раз в формате 'название, цена'");
         }
         name = strs[0];
         str = strs[1].trim();
@@ -168,5 +172,16 @@ class ProductBase {
             System.out.println("Не число, повторите ввод еще раз");
             parse();
        }
+    }
+
+    private void printLine() throws SQLException
+    {
+        int id = rs.getInt("id");
+        int prodid = rs.getInt("prodid");
+        String title = rs.getString("title");
+        int cost = rs.getInt("cost");
+        System.out.println(id +
+                "\t" + prodid + "\t" + title +
+                "\t" + cost);
     }
 }

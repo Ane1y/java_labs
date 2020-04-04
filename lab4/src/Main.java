@@ -23,12 +23,13 @@ public class Main {
                 System.out.println("Введите ваш запрос: ");
                 String s = in.next();
                 base.executeQuery(s);
+                in.nextLine();
             }
         } catch (SQLException | NullPointerException e) {
             e.printStackTrace();
         } catch (InputMismatchException e)
         {
-            System.out.println("Неверный формат вывода данных.");
+            System.out.println("Неверный формат ввода данных");
         }
 
     }
