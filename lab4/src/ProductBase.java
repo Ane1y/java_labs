@@ -114,8 +114,17 @@ class ProductBase {
                     break;
                 case "/filter_by_price":
                     System.out.println("Введите промежуток через пробел");
-                    int num1 = in.nextInt();
-                    int num2 = in.nextInt();
+                    int num1 = 0;
+                    int num2 = 0;
+                    try {
+                        num1 = in.nextInt();
+                        num2 = in.nextInt();
+                    } catch (InputMismatchException e)
+                    {
+                        System.out.println("Введите целые числа через пробел");
+                        num1 = in.nextInt();
+                        num2 = in.nextInt();
+                    }
                     if ((num1 < num2) & (num1 > 0) & (num2 > 0)) {
                         rs = stmt.executeQuery("SELECT * FROM users WHERE cost BETWEEN " + num1 + " AND " + num2);
                         while (rs.next()) {
