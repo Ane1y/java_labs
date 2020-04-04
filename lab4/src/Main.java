@@ -30,6 +30,7 @@ public class Main {
         } catch (InputMismatchException e)
         {
             System.out.println("Неверный формат ввода данных");
+
         }
 
     }

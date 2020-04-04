@@ -49,6 +49,12 @@ class ProductBase {
                     System.out.println("Введите данные в формате 'название, цена'");
                     try {
                         parse();
+                    } catch (InputMismatchException e) {
+                          e.getMessage();
+                          System.out.println("Некорректный ввод. Введите данные в формате 'название, цена'");
+                          parse();
+                    }
+                    try {
                         ps = connection.prepareStatement("INSERT INTO users (prodid, title, cost) VALUES (?, ?, ?)");
                         ps.setInt(1, ++rowCount);
                         ps.setString(2, name);
@@ -57,12 +63,8 @@ class ProductBase {
                         System.out.println("Успешно добавлено");
                     } catch (SQLIntegrityConstraintViolationException e) {
                         System.out.println("Товар с таким именем уже содержится в данной таблице");
-                    } catch (InputMismatchException e){
-                        e.getMessage();
-                        parse();
                     }
                     connection.setAutoCommit(true);
-
                     break;
                 case "/delete":
                     System.out.println("Введите название товара, который вы хотите удалить");
@@ -169,8 +171,7 @@ class ProductBase {
         try {
             price = Integer.parseInt(str);
         } catch (NumberFormatException e) {
-            System.out.println("Не число, повторите ввод еще раз");
-            parse();
+            throw new InputMismatchException("Не число, повторите ввод еще раз");
        }
     }
 
