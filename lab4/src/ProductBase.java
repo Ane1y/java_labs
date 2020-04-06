@@ -50,8 +50,7 @@ class ProductBase {
                     try {
                         parse();
                     } catch (InputMismatchException e) {
-                          e.getMessage();
-                          System.out.println("Некорректный ввод. Введите данные в формате 'название, цена'");
+                          System.out.println( e.getMessage());
                           parse();
                     }
                     try {
@@ -175,7 +174,12 @@ class ProductBase {
         if(strs.length != 2) {
             throw new InputMismatchException("Неправильный формат ввода данных, попробуйте еще раз в формате 'название, цена'");
         }
-        name = strs[0];
+        str = strs[0].trim();
+        if(!str.matches("^[a-zA-Z0-9]+$"))
+        {
+            throw new InputMismatchException("Название должно содержать только буквы и цифры, попробуйте еще раз");
+        }
+        name = str;
         str = strs[1].trim();
         try {
             price = Integer.parseInt(str);
