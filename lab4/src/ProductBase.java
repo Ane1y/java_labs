@@ -42,16 +42,22 @@ class ProductBase {
 
     }
 
-    void executeQuery(String s) throws SQLException {
+    void executeQuery() throws SQLException {
+        String s = in.next();
             switch (s) {
                 case "/add":
                     connection.setAutoCommit(false);
-                    System.out.println("Введите данные в формате 'название, цена'");
-                    try {
-                        parse();
-                    } catch (InputMismatchException e) {
-                          System.out.println( e.getMessage());
-                          parse();
+                    boolean success = false;
+                    while (!success) {
+                        try {
+                            parse();
+                            success = true;
+                        } catch (InputMismatchException e) {
+                            System.out.println(e.getMessage());
+                            in = new Scanner(System.in);
+                            System.out.print("/add ");
+                        }
+
                     }
                     try {
                         ps = connection.prepareStatement("INSERT INTO users (prodid, title, cost) VALUES (?, ?, ?)");
@@ -66,9 +72,8 @@ class ProductBase {
                     connection.setAutoCommit(true);
                     break;
                 case "/delete":
-                    System.out.println("Введите название товара, который вы хотите удалить");
-                    String str = in.nextLine();
-                    if(isItemExist(str)) {
+                    String str = in.next();
+                            if(isItemExist(str)) {
                         ps = connection.prepareStatement("DELETE FROM users WHERE title = ? ");
                         ps.setString(1, str);
                         ps.executeUpdate();
@@ -76,6 +81,7 @@ class ProductBase {
                     } else {
                         System.out.println("Такого товара не существует");
                     }
+                    in.nextLine();
                     break;
 
                 case "/show_all":
@@ -86,9 +92,10 @@ class ProductBase {
                     break;
 
                 case "/price":
-                    System.out.println("Введите название товара");
-                    str = in.next();
-                    if (isItemExist(str)) {
+                   success = false;
+                   String str1 = in.next();
+
+                    if (isItemExist(str1)) {
                         System.out.println(rs.getInt(2));
                     } else {
                         System.out.println("Такого товара нет");
@@ -96,12 +103,16 @@ class ProductBase {
                     break;
 
                 case "/change_price":
-                    System.out.println("Введите данные в формате 'название, цена'");
-                    try {
-                        parse();
-                    } catch (InputMismatchException e) {
-                    e.getMessage();
-                    parse();
+                    success = false;
+                    while (!success) {
+                        try {
+                            parse();
+                            success = true;
+                        } catch (InputMismatchException e) {
+                            System.out.println(e.getMessage());
+                            in = new Scanner (System.in);
+                            System.out.print("/change_price ");
+                        }
                     }
                     if (isItemExist(name)) {
                             stmt.executeUpdate("UPDATE users SET cost = " + price + " WHERE title = '" + name + "';");
@@ -112,17 +123,19 @@ class ProductBase {
                     }
                     break;
                 case "/filter_by_price":
-                    System.out.println("Введите промежуток через пробел");
                     int num1 = 0;
                     int num2 = 0;
-                    try {
-                        num1 = in.nextInt();
-                        num2 = in.nextInt();
-                    } catch (InputMismatchException e)
-                    {
-                        System.out.println("Введите целые числа через пробел");
-                        num1 = in.nextInt();
-                        num2 = in.nextInt();
+                    boolean success1 = false;
+                    while (!success1) {
+                        try {
+                            num1 = in.nextInt();
+                            num2 = in.nextInt();
+                            success1 = true;
+                        } catch (InputMismatchException e) {
+                            System.out.println("Введите целые числа через пробел");
+                            in = new Scanner(System.in);
+                            System.out.print("/filter_by_price ");
+                        }
                     }
                     if ((num1 < num2) & (num1 > 0) & (num2 > 0)) {
                         rs = stmt.executeQuery("SELECT * FROM users WHERE cost BETWEEN " + num1 + " AND " + num2);
@@ -132,12 +145,14 @@ class ProductBase {
                     } else {
                             System.out.println("Введите положительные числа, первое число должно быть меньше второго");
                         }
+                    in.nextLine();
                     break;
                 case "/exit":
                     System.exit(0);
                     disconnect();
                 default:
                     System.out.println("Такой команды пока нет");
+                    in.nextLine();
                     break;
             }
     }
@@ -167,24 +182,32 @@ class ProductBase {
         }
     }
 
-    private void parse() throws InputMismatchException{
-        String str = in.nextLine();
+    private void parse() throws InputMismatchException {
+
+        String strr = in.nextLine();//почему не читает с консоли??
         String delim = ",";
-        String[] strs = str.split(delim);
+
+        String[] strs = strr.split(delim);
+
         if(strs.length != 2) {
-            throw new InputMismatchException("Неправильный формат ввода данных, попробуйте еще раз в формате 'название, цена'");
+            throw new InputMismatchException("Введите данные в формате 'название, цена'");
         }
-        str = strs[0].trim();
-        if(!str.matches("^[a-zA-Z0-9]+$"))
+        strr = strs[0].trim();
+
+        if(!strr.matches("^[a-zA-Z0-9]+$"))
         {
             throw new InputMismatchException("Название должно содержать только буквы и цифры, попробуйте еще раз");
         }
-        name = str;
-        str = strs[1].trim();
+        name = strr;
+        strr = strs[1].trim();
         try {
-            price = Integer.parseInt(str);
+            price = Integer.parseInt(strr);
+            if(price <= 0)
+            {
+                throw new InputMismatchException("Цена должна быть положительной");
+            }
         } catch (NumberFormatException e) {
-            throw new InputMismatchException("Не число, повторите ввод еще раз");
+            throw new InputMismatchException("Не число или дробное число или неправильный формат, повторите ввод еще раз");
        }
     }
 
