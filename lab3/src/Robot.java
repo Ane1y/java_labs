@@ -19,8 +19,8 @@ class Robot implements Runnable {
                 if (student != null) {
                     while (student.labsCount > 0) {
                         Thread.sleep(500);
-                        System.out.println("[info] " + Thread.currentThread().getName() + " осталось проверить " + student.toString());
                         student.labsCount -= 5;
+                        System.out.println("[info] " + Thread.currentThread().getName() + " осталось проверить " + student.toString());
                     }
                     Thread.sleep(500);
                     System.out.println("[robot] " + Thread.currentThread().getName() + " освободился");
