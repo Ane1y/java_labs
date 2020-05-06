@@ -1,7 +1,8 @@
 public class Main {
 
     public static void main(String[] args) {
-        StudentQueue queue = new StudentQueue();
+        int numOfStudents = 100;
+        StudentQueue queue = new StudentQueue(numOfStudents);
 
         Thread mathThread = new Thread(new Robot(queue, Subject.MATH));
         mathThread.start();
@@ -14,6 +15,5 @@ public class Main {
 
         Thread studentGen = new Thread(new StudentsGenerator(queue));
         studentGen.start();
-
     }
 }

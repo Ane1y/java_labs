@@ -1,17 +1,23 @@
-class StudentsGenerator implements Runnable {
+class StudentsGenerator extends Thread {
     private StudentQueue queue;
 
     StudentsGenerator(StudentQueue queue) {
         this.queue = queue;
+        this.setName("STUDENTS");
     }
 
     public void run() {
-        while (true)
+        while (true) {
             try {
-                queue.put();
-                Thread.sleep(1000);
+                if (!queue.isClosed()) {
+                    queue.put();
+                } else {
+                    System.out.println("Студенты закончились");
+                    break;
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        }
     }
 }
